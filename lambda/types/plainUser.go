@@ -1,19 +1,20 @@
 package types
 
 type PlainUser struct {
-	Username string `json:"username"`
-	Password
+	Username string   `json:"username"`
+	Password Password `json:"password"`
 }
 
-func (plainUser PlainUser) ConvertToUser() (*User, error) {
+func (plainUser PlainUser) ConvertToUser() (User, error) {
+	user := User{}
+
 	passwordHash, err := plainUser.Password.Hash()
 
 	if err != nil {
-		return nil, err
+		return user, err
 	}
 
-	return &User{
-		Username:     plainUser.Username,
-		PasswordHash: *passwordHash,
-	}, nil
+	user.Username = plainUser.Username
+	user.PasswordHash = passwordHash
+	return user, nil
 }

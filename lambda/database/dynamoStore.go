@@ -9,7 +9,7 @@ import (
 )
 
 type DynamoDBStore struct {
-	databaseStore *dynamodb.DynamoDB
+	store *dynamodb.DynamoDB
 }
 
 func NewDynamoDBStore() DynamoDBStore {
@@ -17,21 +17,21 @@ func NewDynamoDBStore() DynamoDBStore {
 	db := dynamodb.New(dbSession)
 
 	return DynamoDBStore{
-		databaseStore: db,
+		store: db,
 	}
 }
 
-func (databaseStore DynamoDBStore) DoesUserExist(userbase string) (bool, error) {
+func (databaseStore DynamoDBStore) DoesUserExist(username string) (bool, error) {
 	getItemInput := &dynamodb.GetItemInput{
 		TableName: aws.String(USER_TABLE_NAME),
 		Key: map[string]*dynamodb.AttributeValue{
 			"username": {
-				S: aws.String(userbase),
+				S: aws.String(username),
 			},
 		},
 	}
 
-	result, err := databaseStore.databaseStore.GetItem(getItemInput)
+	result, err := databaseStore.store.GetItem(getItemInput)
 
 	if err != nil {
 		return false, err
@@ -47,13 +47,39 @@ func (databaseStore DynamoDBStore) InsertUser(user types.User) error {
 			"username": {
 				S: aws.String(user.Username),
 			},
-			"password": {
-				S: aws.String(user.PasswordHash.PasswordHash),
+			"passwordHash": {
+				S: aws.String(string(user.PasswordHash)),
 			},
 		},
 	}
 
-	_, err := databaseStore.databaseStore.PutItem(item)
+	_, err := databaseStore.store.PutItem(item)
 
 	return err
+}
+
+func (databaseStore DynamoDBStore) GetUser(username string) (*types.User, error) {
+	getItemInput := &dynamodb.GetItemInput{
+		TableName: aws.String(USER_TABLE_NAME),
+		Key: map[string]*dynamodb.AttributeValue{
+			"username": {
+				S: aws.String(username),
+			},
+		},
+	}
+
+	result, err := databaseStore.store.GetItem(getItemInput)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if result.Item == nil {
+		return nil, nil
+	}
+
+	return &types.User{
+		Username:     username,
+		PasswordHash: types.PasswordHash(*result.Item["passwordHash"].S),
+	}, nil
 }

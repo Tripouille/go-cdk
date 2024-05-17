@@ -2,29 +2,23 @@ package types
 
 import "golang.org/x/crypto/bcrypt"
 
-type Password struct {
-	Password string `json:"password"`
-}
+type Password string
 
-func (password Password) Hash() (*PasswordHash, error) {
-	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password.Password), 13)
+func (password Password) Hash() (PasswordHash, error) {
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return &PasswordHash{
-		PasswordHash: string(passwordHash),
-	}, nil
+	return PasswordHash(passwordHash), nil
 }
 
-type PasswordHash struct {
-	PasswordHash string `json:"passwordHash"`
-}
+type PasswordHash string
 
 type PasswordValidator struct {
-	Password
-	PasswordHash
+	Password     Password
+	PasswordHash PasswordHash
 }
 
 func NewPasswordValidator(password Password, passwordHash PasswordHash) PasswordValidator {
@@ -34,6 +28,7 @@ func NewPasswordValidator(password Password, passwordHash PasswordHash) Password
 	}
 }
 
+// Validate compares the password with the password hash and returns an error if they don't match
 func (passwordValidator PasswordValidator) Validate() error {
-	return bcrypt.CompareHashAndPassword([]byte(passwordValidator.PasswordHash.PasswordHash), []byte(passwordValidator.Password.Password))
+	return bcrypt.CompareHashAndPassword([]byte(passwordValidator.PasswordHash), []byte(passwordValidator.Password))
 }
