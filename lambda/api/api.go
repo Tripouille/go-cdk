@@ -7,12 +7,12 @@ import (
 )
 
 type ApiHandler struct {
-	dbStore database.DynamoDBClient
+	databaseStore database.DatabaseStore
 }
 
-func NewApiHandler(dbStore database.DynamoDBClient) ApiHandler {
+func NewApiHandler(databaseStore database.DatabaseStore) ApiHandler {
 	return ApiHandler{
-		dbStore: dbStore,
+		databaseStore: databaseStore,
 	}
 }
 
@@ -21,11 +21,11 @@ func (apiHandler ApiHandler) RegisterUserHandler(registerUser types.RegisterUser
 		return fmt.Errorf("username and password are required")
 	}
 
-	if userExists, err := apiHandler.dbStore.DoesUserExist(registerUser.Username); err != nil {
+	if userExists, err := apiHandler.databaseStore.DoesUserExist(registerUser.Username); err != nil {
 		return err
 	} else if userExists {
 		return fmt.Errorf("user already exists")
 	}
 
-	return apiHandler.dbStore.CreateUser(registerUser)
+	return apiHandler.databaseStore.InsertUser(registerUser)
 }
