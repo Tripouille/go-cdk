@@ -1,8 +1,9 @@
 build:
 	@GOOS=linux GOARCH=amd64 go build -o bootstrap
 	@zip function.zip bootstrap
+	@rm bootstrap
 
 clean:
-	@rm -f bootstrap function.zip
+	@rm function.zip
 
 .PHONY: build clean
