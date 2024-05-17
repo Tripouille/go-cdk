@@ -10,5 +10,5 @@ const (
 
 type UserStore interface {
 	DoesUserExist(userbase string) (bool, error)
-	InsertUser(user types.RegisterUser) error
+	InsertUser(user types.User) error
 }

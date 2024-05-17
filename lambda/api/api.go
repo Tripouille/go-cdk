@@ -16,16 +16,22 @@ func NewApiHandler(databaseStore database.DatabaseStore) ApiHandler {
 	}
 }
 
-func (apiHandler ApiHandler) RegisterUserHandler(registerUser types.RegisterUser) error {
-	if registerUser.Username == "" || registerUser.Password == "" {
+func (apiHandler ApiHandler) RegisterUserHandler(plainUser types.PlainUser) error {
+	if plainUser.Username == "" || plainUser.Password.Password == "" {
 		return fmt.Errorf("username and password are required")
 	}
 
-	if userExists, err := apiHandler.databaseStore.DoesUserExist(registerUser.Username); err != nil {
+	if userExists, err := apiHandler.databaseStore.DoesUserExist(plainUser.Username); err != nil {
 		return err
 	} else if userExists {
 		return fmt.Errorf("user already exists")
 	}
 
-	return apiHandler.databaseStore.InsertUser(registerUser)
+	user, err := plainUser.ConvertToUser()
+
+	if err != nil {
+		return err
+	}
+
+	return apiHandler.databaseStore.InsertUser(*user)
 }

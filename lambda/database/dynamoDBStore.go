@@ -40,7 +40,7 @@ func (databaseStore DynamoDBStore) DoesUserExist(userbase string) (bool, error) 
 	return result.Item != nil, nil
 }
 
-func (databaseStore DynamoDBStore) InsertUser(user types.RegisterUser) error {
+func (databaseStore DynamoDBStore) InsertUser(user types.User) error {
 	item := &dynamodb.PutItemInput{
 		TableName: aws.String(USER_TABLE_NAME),
 		Item: map[string]*dynamodb.AttributeValue{
@@ -48,7 +48,7 @@ func (databaseStore DynamoDBStore) InsertUser(user types.RegisterUser) error {
 				S: aws.String(user.Username),
 			},
 			"password": {
-				S: aws.String(user.Password),
+				S: aws.String(user.PasswordHash.PasswordHash),
 			},
 		},
 	}
