@@ -32,7 +32,8 @@ func NewGoCdkStack(scope constructs.Construct, id string, props *GoCdkStackProps
 			Name: jsii.String("username"),
 			Type: awsdynamodb.AttributeType_STRING,
 		},
-		TableName: jsii.String("userTable"),
+		TableName:     jsii.String("userTable"),
+		RemovalPolicy: awscdk.RemovalPolicy_DESTROY,
 	})
 
 	table.GrantReadWriteData(userHandler)
@@ -56,6 +57,9 @@ func NewGoCdkStack(scope constructs.Construct, id string, props *GoCdkStackProps
 
 	loginResource := apiGateway.Root().AddResource(jsii.String("login"), nil)
 	loginResource.AddMethod(jsii.String("POST"), userIntegration, nil)
+
+	protectedResource := apiGateway.Root().AddResource(jsii.String("protected"), nil)
+	protectedResource.AddMethod(jsii.String("GET"), userIntegration, nil)
 
 	return stack
 }

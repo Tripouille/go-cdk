@@ -110,8 +110,17 @@ func (apiHandler ApiHandler) LoginUserHandler(request events.APIGatewayProxyRequ
 		}, nil
 	}
 
+	accessToken, err := types.CreateToken(*user)
+	if err != nil {
+		return events.APIGatewayProxyResponse{
+			Body:       "Internal server error",
+			StatusCode: http.StatusInternalServerError,
+		}, fmt.Errorf("Internal server error: %w", err)
+	}
+	successMessage := fmt.Sprintf("Login successful. Access token: %s", accessToken)
+
 	return events.APIGatewayProxyResponse{
-		Body:       "Login successful",
+		Body:       successMessage,
 		StatusCode: http.StatusOK,
 	}, nil
 }
